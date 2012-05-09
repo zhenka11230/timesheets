@@ -1,0 +1,104 @@
+.red {
+	color: red;
+}
+
+.orange {
+	color: #ff6600;
+}
+
+.grey {
+	color: #666;
+}
+
+.green {
+	color: green;
+}
+
+.black {
+	color: black;
+}
+
+td {
+	padding: 4px;
+}
+
+table.four-fields td, table.four-fields th {
+	width: 25%;
+
+}
+
+table.day_raw_grid td, table.day_raw_grid th{
+	width: 20%;
+	margin: 0px;
+	padding: 0px;
+
+}
+
+table.day_raw_grid input, table.day_raw_grid div.center{
+	text-align: center;
+}
+
+.totals_css{
+
+	background-color: white;
+}
+
+.totals_css td{
+
+	border-top: solid #666 1px;
+}
+
+table.select_timesheet {
+	margin-bottom: 15px;
+	text-align: center;
+}
+
+#footer_interface td{
+	width: 33%;
+	text-align: center;
+}
+#footer_interface{
+	width:100%;
+}
+
+table.day_grid td, table.day_grid th {
+	width: 9%;
+}
+
+tbody.day_grid td, tbody.day_grid th {
+	width: 9%;
+}
+
+table.day_grid td input {
+	width: 93%;
+}
+
+table.day_grid tr {
+	text-align: center;
+}
+
+label {
+	font-weight: bold;
+}
+
+table.day_grid th {
+	background-color: #ffebd3;
+	border-bottom: 1px solid black;
+}
+
+tr.loading-grid, tr.grid-row1, tr.grid-row0, tr {
+	height: 30px;
+	padding: 0;
+	margin: 0;
+	
+}
+
+tr.loading-grid td, tr.grid-row1 td, tr.grid-row0 td, td{
+	height: 18px;
+	padding: 2px;
+	margin: 0px;
+}
+
+.search_field{
+    width: 280px;
+}

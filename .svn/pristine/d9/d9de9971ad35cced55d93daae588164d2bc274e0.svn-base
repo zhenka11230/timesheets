@@ -1,0 +1,637 @@
+$(document).ready(function() {
+		
+	//view-model
+	var two_weeks = []; //array of 14 json objects representing each day of the timesheet
+	var two_weeks_total;
+	var week1; //array of 14 json objects is split into sets of 7 for each week
+	var week2;
+	var week1_total; //week sub totals
+	var week2_total;
+
+
+	//hide next/previous employee buttons if the user is user because there is no next/previous for them
+	if (is_admin != 1){
+		$('#select_timesheet_form .next_employee, #footer_interface .next_employee').hide();
+		$('#select_timesheet_form .previous_employee, #footer_interface .previous_employee').hide();
+		$('#cut_overtime_options').remove();
+	}
+	
+	$('#trim_hours_options').click(function(){
+		$('#trim_hours_modal').dialog('open');
+		
+	});
+	
+	$('#trim_hours_btn').click(function(){
+		var up_hours_cut = $('#up_hours_cut').val();
+		var down_hours_cut = $('#down_hours_cut').val();
+		get_timesheet(type="trim_hours_timesheet&up_hours_cut="+up_hours_cut+"&down_hours_cut="+down_hours_cut);
+		$('#trim_hours_modal').dialog('close');	
+	});
+	
+
+	//set the employee and department selectors to either get or first one by default
+	$('#employee_id').val(lngID);
+	$('#department_id').val(department_id);
+		
+	//disable next/previous employee buttons if there is no next/previous	
+	if($('#employee_id option:selected').val() == $('#employee_id option:first').val() ){
+		$('#select_timesheet_form .previous_employee, #footer_interface .previous_employee').attr('disabled', 'disabled');
+	}
+		
+	if($('#employee_id option:selected').val() == $('#employee_id option:last').val() ){
+		$('#select_timesheet_form .next_employee, #footer_interface .next_employee').attr('disabled', 'disabled');
+	}
+
+	//circular cycle through employees forward
+	$('#select_timesheet_form .next_employee, #footer_interface .next_employee').click(function(){ // used to get to next employee on the list with >>
+		$('#employee_id option:selected').next('option').attr('selected', 'selected');
+		$('#employee_id').change();
+	});
+
+	//circular cycle through employees backwards
+	$('#select_timesheet_form .previous_employee, #footer_interface .previous_employee').click(function(){
+		$('#employee_id option:selected').prev('option').attr('selected', 'selected');
+		$('#employee_id').change();
+	});
+			
+	//if all of the selectors are selected show the timesheet
+	if(isSelectedAll()) {
+		get_timesheet(type = 'get_timesheet');
+	}
+	else $('#timesheet').hide();
+		
+	function isSelectedAll(){
+		if ($('#date').val() != '' && $('#employee_id').val() != '' && $('#department_id').val() != ''){
+			return true;
+		}
+		else return false;
+	}
+	
+	//post the selectors on change
+	$('#select_timesheet_form .selector').change(function() {
+		if (department_id != $('#department_id').val()){
+			$('#employee_id').val(null);
+		}
+		post();	
+	});
+
+	function post(){
+		$('#select_timesheet_form').trigger('submit');
+	}
+
+	//get entire timesheet with ajax
+	function get_timesheet(type){
+		$.ajax({
+			url: "ajax_controller.php?action=" + type
+			+ "&timesheet_period_id="
+			+timesheet_period_id
+			+"&employee_id="
+			+lngID,
+			async: false,
+			dataType: 'json',
+			error: function(){
+				$('#error_msg').html("<p>Something went wrong.</p>").show();
+				$('#timesheet').hide();
+			},
+			success: function(data) {
+				//				console.log(data); // uncomment this to debug
+				//				$('#error_msg').html(data); // or this to view as html (for color etc...)
+				if (!data.error){
+					two_weeks = data.message;
+					init();
+					$('#error_msg').hide();
+				} else {
+					$('#error_msg').html(data.error).show();
+					$('html, body').animate({
+						scrollTop:0
+					}, 'fast');
+				}
+				$('#timesheet').show();
+			}
+		});
+							
+	}
+	
+
+	function init(){
+		//slice two weeks into seprate weeks
+		week1 = two_weeks.slice(0, 7);
+		week2 = two_weeks.slice(7, 14);
+
+		calculate_totals();
+
+		$("#week1").empty();
+		$("#week2").empty();
+		$("#week1_totals").empty();
+		$("#week2_totals").empty();
+		$("#totals").empty();
+
+		$("#day_calculated_template").tmpl(week1).appendTo("#week1");
+		$("#day_calculated_template").tmpl(week2).appendTo("#week2");
+
+		$("#totals_template").tmpl(week1_total, {
+			"header": "Sub Total"
+		}).appendTo("#week1_totals");
+		$("#totals_template").tmpl(week2_total, {
+			"header": "Sub Total"
+		}).appendTo("#week2_totals");
+
+		$("#totals_template").tmpl(two_weeks_total, {
+			"header": "Total"
+		}).appendTo("#totals");
+
+	}
+
+	//day calculated are the links on the page that trigger modal
+	$('#timesheet .day_grid').delegate('.day_calculated', 'click', function(){
+		var tmplitem = $(this).tmplItem();
+		render_modal(tmplitem);
+	});
+	
+	$("#trim_hours_modal").dialog({
+		autoOpen: false,
+		modal: true,
+		position: 'center',
+		width: 350,
+		resizable: false,
+		closeOnEscape: false,
+		draggable: false,
+		close: function(){ 
+			$('div.time-picker').hide();
+		}, //prevents time picker remaining open bug
+		open: function(){
+			$('input').blur();
+		}
+	});
+		
+	$( "#day_raw_modal" ).dialog({
+		autoOpen: false,
+		height: 'auto',
+		width: 800,
+		height: 650,
+		modal: true,
+		resizable: false,
+		position: 'top',
+		draggable: false,
+		closeOnEscape: false,
+		open: function(event, ui) {
+			$(this).parent().children().children('.ui-dialog-titlebar-close').hide();
+		},//hide X(close)
+		close: function(){ 
+			$('div.time-picker').hide();
+		},
+		buttons: (function(){
+			var admin_buttons = {
+				//				"History": function(){
+				//					window.open('/mylibrary/?view=logs&application=Timesheets&details=Timesheet%20Period:%20'+timesheet_period_id);
+				//					if (is_admin != 1){
+				//						$(this).button().remove();
+				//					}
+				//				},
+				"Recalculate": function(){
+					var template = $("#day_raw_modal_data input").tmplItem();//get the template associated with modal that is currently rendered
+					template.data = get_day('recalculate_day', template.data); //update the data
+					template.update(); //update the view
+				},
+				"Restore Original Times": function(){
+					var template = $(this).data('template');
+					var answer = confirm("You are about to discard the user-modified times and restore the originals. Continue?");
+							
+					if (answer){
+						process_action('restore_day', template);
+					}
+				},
+				"Discard Day": function() {
+					var template = $(this).data('template');
+					var answer = confirm("You are about to discard all of the employee data for this day. Continue?");
+							
+					if (answer){
+						process_action('discard_day', template);
+					}		
+				}
+			}
+			var user_buttons = {
+				"Save": function() {
+					var template = $(this).data('template');//reference to the original object (before cloning) needed to update the non-modal view
+					var answer = is_admin ? confirm("You are about to overwrite the original times. Continue?") : true;
+				
+					if (answer) {
+						var type = is_admin  ? "save_day" : "update_comment_day";
+						process_action(type, template); //get the new object and update the non-modal view
+					}
+				},
+				"<<<": function() {
+					var template = $(this).data('template');
+					var answer = true;
+						
+					if (is_changed(template.data)){
+						answer =  confirm("Are you sure you want to discard the changes?");
+					}
+						
+					if (answer){
+						var start_date_limit = Date.parse(start_date);
+						start_date_limit = start_date_limit.add({
+							days: -1
+						}); 
+						start_date_limit = start_date_limit.toString('MM/dd/yyyy');
+							
+						
+						var this_date = Date.parse(template.data.date);
+						var previous_date = this_date.add({
+							days: -1
+						});
+						previous_date = previous_date.toString('MM/dd/yyyy');
+						if(previous_date === start_date_limit){ //go in circle or disable
+							alert("This is the first day in this pay period");
+							$(this).button('disable');
+						//						previous_date = end_date;
+						}
+						//find the previous date in the non-modal and use its linked template to render modal
+						var tmpl = $("a:contains('" + previous_date + "')").tmplItem();
+						render_modal(tmpl);
+					}
+				},
+				">>>": function() {		
+					var template = $(this).data('template');
+					var answer = true;
+						
+					if (is_changed(template.data)){
+						answer =  confirm("Are you sure you want to discard the changes?");
+					}
+						
+					if (answer){
+						var end_date_limit = Date.parse(end_date);
+						end_date_limit = end_date_limit.add({
+							days: 1
+						});
+						end_date_limit = end_date_limit.toString('MM/dd/yyyy');
+				
+						var this_date = Date.parse(template.data.date);
+						var next_date = this_date.add({
+							days: 1
+						});
+						next_date = next_date.toString('MM/dd/yyyy');
+						if(next_date === end_date_limit){
+							alert("You reached the last day in this pay period");
+							$(this).button('disable');
+						//						next_date = start_date;
+						}
+						var tmpl = $("a:contains('" + next_date + "')").tmplItem();
+						render_modal(tmpl);
+					}
+				},
+				"Close": function() {
+					//						var template_clone = $("#day_raw_modal_data input").tmplItem(); //TODO: make triggers div not input
+					//					var template_clone = $("#day_raw_modal_data div.center").tmplItem();	
+					var template = $(this).data('template');
+					var answer = true;
+
+					if (is_changed(template.data)){ //detect changes
+						answer = confirm("Are you sure you want to discard the changes?");
+					}
+						 
+					if (answer){ 
+						$( this ).dialog( "close" );
+					}	
+				}				
+			}
+			return is_admin ? $.extend(admin_buttons, user_buttons) : user_buttons;
+		}
+		)()
+	});
+			
+	function is_changed(template_data){
+		var template_clone = $("#day_raw_modal_data input").tmplItem();
+		return !is_equal(template_clone.data, template_data)
+			
+	}
+
+	function process_action(type, template){
+		var template_clone = $("#day_raw_modal_data input").tmplItem();//template corresponding to modal
+		//send this data and receive a new object
+		template_clone.data = get_day(type, template_clone.data); //take this data and replace the modal data with it
+		template_clone.update(); //update the view of the modal
+		if (!template_clone.data.input_error.length){ //if no input error, update the timesheet data
+			copy_data(template_clone, template); //copy the data from modal to non-modal (timesheet)
+			template.data.success = ''; //earase the success message so its not there on next open triger
+			calculate_totals();
+			update_totals();
+			template.update(); //update the view of the non modal timesheet
+		}
+		admin_settings();
+	}
+
+	//get one day with ajax.  Type argument signifies action.
+	function get_day(type, day_data){
+		day_data = strip_irrelevant_data(day_data);
+		day_data['timesheet_period_id'] = timesheet_period_id;
+		day_data['employee_id'] = employee_id;
+		var encoded = JSON.stringify(day_data);
+		var day_received;
+		$.ajax({
+			url: "ajax_controller.php?action="+type,
+			data: {
+				json: encoded
+			},
+			async: false,
+			dataType: 'json', //replace with 'text' to debug and 'json' to make it work.
+			error: function(){
+				$('#day_raw_modal').dialog('close');
+				$('#error_msg').html("<p>Something went wrong.</p>").show();
+				$('#timesheet').hide();
+			},
+			success: function(data) {
+				//					if (data.status)
+				console.log(data); // uncomment this to debug
+				//				$('#error_msg').html(data); // or this to view as html (for color etc...)
+				day_received = data.message;
+			//					console.log(data);
+			}
+		});
+		return day_received;
+	}
+		
+	function admin_settings(){
+		if (is_admin != 1) {
+			$('#day_raw_modal .day_raw_grid input').attr('disabled', true);
+			$('#day_raw_modal button').remove();
+			$('#cut_overtime_options').remove();
+		}
+	}
+		
+	function render_modal(template){
+		//the view-model for that day(json) is cloned before being rendered into modal to provide features such as cancel and detect changes.
+		var day_clone = JSON.parse(JSON.stringify(template.data));//creates a copy of the object
+		$("#day_raw_modal_data").empty();
+		$("#day_raw_modal").data('template', template).dialog("open");//pass the reference to the original template for updating
+		$("#day_raw_modal_template").tmpl(day_clone).appendTo("#day_raw_modal_data");//use clone to render modal
+		
+	
+		admin_settings();
+	}
+	
+	//delegate makes sure trigger is not removed as button comes in and out of existence in the dom
+	//removes break in and out of a certain index depending on where the button was clicked
+	//simply adds break in and out to the data and rerenders the template
+	$('#day_raw_modal')
+	.delegate('button.add_break','click', function () {
+		var tmplitem = $(this).tmplItem();
+		tmplitem.data.meal_period_times_raw.push({
+			"meal_period_in" : "", 
+			"meal_period_out" : ""
+		});
+		tmplitem.update();
+	})
+	//it works because each corresponding input fields has the same name as the variable name in the json(view-model)
+	.delegate( "input, textarea", "change", function () {
+		/* Set the data to the modified value */
+		$.tmplItem(this).data[ this.name ] = this.value;
+	})
+	//calculates total for each break
+	.delegate( "input.break", "change", function () {
+			
+		var template = $.tmplItem(this);
+		var tmpldata = template.data;
+		
+		if (Date.parse(tmpldata.meal_period_in) != null && Date.parse(tmpldata.meal_period_out) != null){
+			var time_in = Date.parse(tmpldata.meal_period_in);
+			var time_out = Date.parse(tmpldata.meal_period_out);
+			var total = time_out.add({
+				hours: -1 *  time_in.getHours(), 
+				minutes: -1 *  time_in.getMinutes()
+			});
+			tmpldata.this_meal_period = ""+total.getHours()+":"+total.getMinutes();
+			template.update();
+		}
+	})
+	.delegate('button.remove_break','click', function () {
+		var template = $(this).tmplItem();
+		var index = $.inArray(template.data, template.parent.data.meal_period_times_raw);
+		template.parent.data.meal_period_times_raw.splice(index, 1);
+		template.parent.update();
+	});
+
+	//when there, add timepicker to the input field of class time_picker
+	$("#day_raw_modal, #trim_hours_modal")
+	.delegate('input.time_picker, #cut_overtime_options input','hover',function(){
+		$(this).timePicker({
+			startTime: "12:00 AM",  // Using string. Can take string or Date object.
+			endTime: "11:30 PM",
+			show24Hours: false,
+			separator:':',
+			step: 30
+		});
+	
+	})
+	//one way to fix the timepicker bug
+	.delegate('input.time_picker,  #cut_overtime_options input','focus',function(){
+		$('div.time-picker').hide();
+	});
+	
+	//continiuation of the fix
+	$('body').click(function(){
+		var mouse_is_inside = false;
+		
+		$('div.time-picker').hover(function(){
+			mouse_is_inside = true;
+		}, function(){
+			mouse_is_inside = false;
+		});
+		
+		if (!mouse_is_inside) $('div.time-picker').hide();
+	});
+
+	function get_minutes(timestring){
+		var split_array = timestring.split(':');
+		var hours = split_array[0];
+		var minutes = hours * 60 + parseInt(split_array[1]);
+		return minutes;
+	}
+
+	function minutes_to_time(total_minutes){
+		var minutes = total_minutes % 60;
+		var hours = Math.floor(total_minutes/60);
+		if (minutes == 0){
+			minutes = '00';
+		}
+		return hours+":"+minutes;
+	}
+
+	//two week totals
+	function calculate_totals(){
+		week1_total = calculate_sub_totals(week1);
+		week2_total = calculate_sub_totals(week2);
+
+		var total = 0;
+		var total_hours_worked = 0;
+		var total_sick_hours = 0;
+		var total_annual_hours = 0;
+		var total_shift_hours = 0;
+
+		total = get_minutes(week1_total.total) + get_minutes(week2_total.total);
+		total_hours_worked = get_minutes(week1_total.total_hours_worked) + get_minutes(week2_total.total_hours_worked);
+		total_shift_hours = get_minutes(week1_total.total_shift_hours) + get_minutes(week2_total.total_shift_hours);
+		total_sick_hours = week1_total.total_sick_hours + week2_total.total_sick_hours;
+		total_annual_hours = week1_total.total_annual_hours + week2_total.total_annual_hours;
+
+		total = minutes_to_time(total);
+		total_hours_worked = minutes_to_time(total_hours_worked);
+		total_shift_hours = minutes_to_time(total_shift_hours);
+
+		two_weeks_total  =	{
+			total : total,
+			total_hours_worked: total_hours_worked,
+			total_sick_hours: total_sick_hours,
+			total_annual_hours: total_annual_hours,
+			total_shift_hours: total_shift_hours
+		};
+	}
+
+	//one week totals
+	function calculate_sub_totals(week_data){
+		var total = 0;
+		var total_hours_worked = 0;
+		var total_sick_hours = 0;
+		var total_annual_hours = 0;
+		var total_shift_hours = 0;
+		for (i in week_data){
+			total += get_minutes(week_data[i].total);
+			total_hours_worked += get_minutes(week_data[i].hours_worked);
+			total_shift_hours += get_minutes(week_data[i].shift_hours);
+			if(week_data[i].sick_hours == '')
+				week_data[i].sick_hours = 0;
+			if(week_data[i].annual_hours == '')
+				week_data[i].annual_hours = 0;
+			total_sick_hours += parseFloat(week_data[i].sick_hours);
+			total_annual_hours += parseFloat(week_data[i].annual_hours);
+		}
+
+		total = minutes_to_time(total);
+		total_hours_worked = minutes_to_time(total_hours_worked);
+		total_shift_hours = minutes_to_time(total_shift_hours);
+
+		var week_totals =	{
+			total : total,
+			total_hours_worked: total_hours_worked,
+			total_sick_hours: total_sick_hours,
+			total_annual_hours: total_annual_hours,
+			total_shift_hours: total_shift_hours
+		};
+
+		return week_totals;
+	}
+
+	//update the view/data after calculating totals.
+	function update_totals(){
+		//these are just ways to access the needed templates.  Input provides the most reliable result.
+		var tmpl1 = $("#week1_totals input").tmplItem();
+		var tmpl2 = $("#week2_totals input").tmplItem();
+		var tmpl3 = $("#totals input").tmplItem();
+
+		tmpl1.data = week1_total;
+		tmpl2.data = week2_total;
+		tmpl3.data = two_weeks_total;
+		tmpl2.update();
+		tmpl1.update();
+		tmpl3.update();
+	}
+
+	function copy_data(tmpl1, tmpl2){
+		for(var i in tmpl1.data){ //fixes data-linking bug
+			tmpl2.data[i] = tmpl1.data[i];
+		}
+	}
+
+	//general object comparision function
+	function object_equals(v1, v2) {
+
+		if (typeof(v1) !== typeof(v2)) {
+			return false;
+		}
+
+		if (typeof(v1) === "function") {
+			return v1.toString() === v2.toString();
+		}
+
+		if (v1 instanceof Object && v2 instanceof Object) {
+			if (count_props(v1) !== count_props(v2)) {
+				return false;
+			}
+			var r = true;
+			for (k in v1) {
+				r = object_equals(v1[k], v2[k]);
+				if (!r) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return v1 === v2;
+		}
+	}
+
+	//used inside object_euqals
+	function count_props(obj) {
+		var count = 0;
+		for (k in obj) {
+			if (obj.hasOwnProperty(k)) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
+	//compares cloned object with the object in the modal to detect changes
+	function is_equal(obj1, obj2){
+
+		//clone objects to prevent changing the objects themselves
+		obj1 = JSON.parse(JSON.stringify(obj1, filter));
+		obj2 = JSON.parse(JSON.stringify(obj2, filter));
+
+		//remove data that might throw of the comparison
+		obj1 = strip_irrelevant_data(obj1);
+		obj2 = strip_irrelevant_data(obj2);
+
+		//compare
+		if (object_equals(obj1, obj2)){
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	//this function is passed to JSON.stringify() to convert ints to strings
+	//to avoid obj comparison bugs where one obj would have int and another string
+	//of the same value
+	function filter(key, value){
+		if (typeof(value) == "number"){
+			return value + '';
+		}
+		return value;
+	}
+
+	//this data can intervene with object comparisons or display nonsensical errors/warnings.
+	function strip_irrelevant_data(obj){
+		obj.success = '';
+		obj.warning = '';
+		obj.error = '';
+		obj.input_error = '';
+		return obj;
+	}
+
+	//fill out form with data needed to fill out the pdf and submit it to the download page
+	$('#download').click(function () {
+		$('#week_data1').val(JSON.stringify(week1));
+		$('#week_data2').val(JSON.stringify(week2));
+		$('#week_total1').val(JSON.stringify(week1_total));
+		$('#week_total2').val(JSON.stringify(week2_total));
+		$('#two_week_total').val(JSON.stringify(two_weeks_total));
+		$('#first_name_data').val(first_name);
+		$('#last_name_data').val(last_name);
+		$('#ca_or_sa_data').val(ca_or_sa);
+		$('#payroll_period_data').val(payroll_period);
+		$('#department_data').val(department);
+		$('#pdf_form').submit();
+	});
+});

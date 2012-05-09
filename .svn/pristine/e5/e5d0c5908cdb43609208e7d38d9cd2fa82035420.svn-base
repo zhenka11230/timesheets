@@ -1,0 +1,213 @@
+<?php
+//require_once(dirname(__FILE__)."/DbObject.php");
+
+class EmploymentType extends DbObject
+{
+	public static $tableName = "tblEmploymentTypes";
+	public $exists = false;
+
+	/** [[Column=lngID, DataType=int, Description=LngID, ReadOnly=true]]*/
+	public $lngID;
+
+	/** [[Column=strName, DataType=varchar, Description=StrName, MaxLength=255]]*/
+	public $strName;
+
+	/** [[Column=blnAccrueVacations, DataType=bit, Description=BlnAccrueVacations, Required=true]]*/
+	public $blnAccrueVacations;
+
+	/** [[Column=lngVacationStartAfter, DataType=int, Description=LngVacationStartAfter]]*/
+	public $lngVacationStartAfter;
+
+	/** [[Column=bytVacationStartAferUnits, DataType=smallint, Description=BytVacationStartAferUnits]]*/
+	public $bytVacationStartAferUnits;
+
+	/** [[Column=sngVacationStartAt, DataType=real, Description=SngVacationStartAt]]*/
+	public $sngVacationStartAt;
+
+	/** [[Column=sngVacationAccrue, DataType=real, Description=SngVacationAccrue]]*/
+	public $sngVacationAccrue;
+
+	/** [[Column=sngVacationAccrueEvery, DataType=real, Description=SngVacationAccrueEvery]]*/
+	public $sngVacationAccrueEvery;
+
+	/** [[Column=bytVacationAccrueUnit, DataType=smallint, Description=BytVacationAccrueUnit]]*/
+	public $bytVacationAccrueUnit;
+
+	/** [[Column=blnVacationAccrueLimit, DataType=bit, Description=BlnVacationAccrueLimit, Required=true]]*/
+	public $blnVacationAccrueLimit;
+
+	/** [[Column=sngVacationAccrueLimit, DataType=real, Description=SngVacationAccrueLimit]]*/
+	public $sngVacationAccrueLimit;
+
+	/** [[Column=bytVacationResetAccrual, DataType=smallint, Description=BytVacationResetAccrual]]*/
+	public $bytVacationResetAccrual;
+
+	/** [[Column=blnVacationCarryOverBalance, DataType=bit, Description=BlnVacationCarryOverBalance, Required=true]]*/
+	public $blnVacationCarryOverBalance;
+
+	/** [[Column=blnAccrueSickLeave, DataType=bit, Description=BlnAccrueSickLeave, Required=true]]*/
+	public $blnAccrueSickLeave;
+
+	/** [[Column=lngSickLeaveStartAfter, DataType=int, Description=LngSickLeaveStartAfter]]*/
+	public $lngSickLeaveStartAfter;
+
+	/** [[Column=bytSickLeaveStartAferUnits, DataType=smallint, Description=BytSickLeaveStartAferUnits]]*/
+	public $bytSickLeaveStartAferUnits;
+
+	/** [[Column=sngSickLeaveStartAt, DataType=real, Description=SngSickLeaveStartAt]]*/
+	public $sngSickLeaveStartAt;
+
+	/** [[Column=sngSickLeaveAccrue, DataType=real, Description=SngSickLeaveAccrue]]*/
+	public $sngSickLeaveAccrue;
+
+	/** [[Column=sngSickLeaveAccrueEvery, DataType=real, Description=SngSickLeaveAccrueEvery]]*/
+	public $sngSickLeaveAccrueEvery;
+
+	/** [[Column=bytSickLeaveAccrueUnit, DataType=smallint, Description=BytSickLeaveAccrueUnit]]*/
+	public $bytSickLeaveAccrueUnit;
+
+	/** [[Column=blnSickLeaveAccrueLimit, DataType=bit, Description=BlnSickLeaveAccrueLimit, Required=true]]*/
+	public $blnSickLeaveAccrueLimit;
+
+	/** [[Column=sngSickLeaveAccrueLimit, DataType=real, Description=SngSickLeaveAccrueLimit]]*/
+	public $sngSickLeaveAccrueLimit;
+
+	/** [[Column=bytSickLeaveResetAccrual, DataType=smallint, Description=BytSickLeaveResetAccrual]]*/
+	public $bytSickLeaveResetAccrual;
+
+	/** [[Column=blnSickLeaveCarryOverBalance, DataType=bit, Description=BlnSickLeaveCarryOverBalance, Required=true]]*/
+	public $blnSickLeaveCarryOverBalance;
+
+	/** [[Column=blnVacationUseHireDate, DataType=bit, Description=BlnVacationUseHireDate, Required=true]]*/
+	public $blnVacationUseHireDate;
+
+	/** [[Column=blnSickTimeUseHireDate, DataType=bit, Description=BlnSickTimeUseHireDate, Required=true]]*/
+	public $blnSickTimeUseHireDate;
+
+	// foreign key fields (will be populated upon request)
+	
+	const TYPE_CA = 1;
+	const TYPE_SA = 2;
+	const TYPE_WS = 3;
+	
+	
+	public function fetchData($id)
+	{
+		//list($arg1, $arg2) = $args;
+		$query="SELECT * FROM ".self::$tableName." WHERE lngID=".$id;
+
+		$row = $this->db->getRow($query);
+		
+		if (count($row) > 0)
+			$this->setPropertyValues($row);
+
+		if ($this->lngID > 0)
+			$this->exists = true;
+	}
+	
+	
+	public function getEmploymentTypes($args=array())
+	{
+		global $db;
+		
+		$query = "SELECT * 
+			FROM ".self::$tableName." t 
+			WHERE 1=1 
+				".(@$args['lngID'] != '' ? " AND lngID={$args['lngID']} " : "")."
+				".(@$args['strName'] != '' ? " AND strName='{$args['strName']}' " : "")."
+				".(@$args['blnAccrueVacations'] != '' ? " AND blnAccrueVacations={$args['blnAccrueVacations']} " : "")."
+				".(@$args['lngVacationStartAfter'] != '' ? " AND lngVacationStartAfter={$args['lngVacationStartAfter']} " : "")."
+				".(@$args['bytVacationStartAferUnits'] != '' ? " AND bytVacationStartAferUnits={$args['bytVacationStartAferUnits']} " : "")."
+				".(@$args['sngVacationStartAt'] != '' ? " AND sngVacationStartAt={$args['sngVacationStartAt']} " : "")."
+				".(@$args['sngVacationAccrue'] != '' ? " AND sngVacationAccrue={$args['sngVacationAccrue']} " : "")."
+				".(@$args['sngVacationAccrueEvery'] != '' ? " AND sngVacationAccrueEvery={$args['sngVacationAccrueEvery']} " : "")."
+				".(@$args['bytVacationAccrueUnit'] != '' ? " AND bytVacationAccrueUnit={$args['bytVacationAccrueUnit']} " : "")."
+				".(@$args['blnVacationAccrueLimit'] != '' ? " AND blnVacationAccrueLimit={$args['blnVacationAccrueLimit']} " : "")."
+				".(@$args['sngVacationAccrueLimit'] != '' ? " AND sngVacationAccrueLimit={$args['sngVacationAccrueLimit']} " : "")."
+				".(@$args['bytVacationResetAccrual'] != '' ? " AND bytVacationResetAccrual={$args['bytVacationResetAccrual']} " : "")."
+				".(@$args['blnVacationCarryOverBalance'] != '' ? " AND blnVacationCarryOverBalance={$args['blnVacationCarryOverBalance']} " : "")."
+				".(@$args['blnAccrueSickLeave'] != '' ? " AND blnAccrueSickLeave={$args['blnAccrueSickLeave']} " : "")."
+				".(@$args['lngSickLeaveStartAfter'] != '' ? " AND lngSickLeaveStartAfter={$args['lngSickLeaveStartAfter']} " : "")."
+				".(@$args['bytSickLeaveStartAferUnits'] != '' ? " AND bytSickLeaveStartAferUnits={$args['bytSickLeaveStartAferUnits']} " : "")."
+				".(@$args['sngSickLeaveStartAt'] != '' ? " AND sngSickLeaveStartAt={$args['sngSickLeaveStartAt']} " : "")."
+				".(@$args['sngSickLeaveAccrue'] != '' ? " AND sngSickLeaveAccrue={$args['sngSickLeaveAccrue']} " : "")."
+				".(@$args['sngSickLeaveAccrueEvery'] != '' ? " AND sngSickLeaveAccrueEvery={$args['sngSickLeaveAccrueEvery']} " : "")."
+				".(@$args['bytSickLeaveAccrueUnit'] != '' ? " AND bytSickLeaveAccrueUnit={$args['bytSickLeaveAccrueUnit']} " : "")."
+				".(@$args['blnSickLeaveAccrueLimit'] != '' ? " AND blnSickLeaveAccrueLimit={$args['blnSickLeaveAccrueLimit']} " : "")."
+				".(@$args['sngSickLeaveAccrueLimit'] != '' ? " AND sngSickLeaveAccrueLimit={$args['sngSickLeaveAccrueLimit']} " : "")."
+				".(@$args['bytSickLeaveResetAccrual'] != '' ? " AND bytSickLeaveResetAccrual={$args['bytSickLeaveResetAccrual']} " : "")."
+				".(@$args['blnSickLeaveCarryOverBalance'] != '' ? " AND blnSickLeaveCarryOverBalance={$args['blnSickLeaveCarryOverBalance']} " : "")."
+				".(@$args['blnVacationUseHireDate'] != '' ? " AND blnVacationUseHireDate={$args['blnVacationUseHireDate']} " : "")."
+				".(@$args['blnSickTimeUseHireDate'] != '' ? " AND blnSickTimeUseHireDate={$args['blnSickTimeUseHireDate']} " : "")."
+			ORDER BY strName";
+		$results = $db->getAll($query);
+		
+		$items = array();
+		foreach ($results as $r) {
+			$obj = new EmploymentType();
+			$obj->setPropertyValues($r);
+			$obj->exists = true;
+			
+			array_push($items, $obj);
+		}
+		
+		return $items;
+	}
+	
+	public function getCount()
+	{
+		global $db;
+		
+		$query = "SELECT count(*) FROM ".self::$tableName;
+		return $db->getOne($query);
+	}
+	
+	public function save($delete=0)
+	{	
+		/*
+		global $login_info;
+
+		$user = $login_info->get_user_info();
+		
+		$this->modified_by = (isset($user['first_name']) ? $user['first_name'].' '.$user['last_name'] : $user['username']);
+		*/
+		//$this->last_modified = date("Y-m-d G:i:s");
+		//$this->deleted = ($delete == 1 || $delete === true ? '1' : '0');
+		
+		// create query
+		$query = ($this->exists ? $this->updateString(self::$tableName, 'lngID') : $this->insertString(self::$tableName));
+
+		// prepare query
+		$stmt = $this->db->prepare($query);
+
+		// execute statement
+		$result =& $this->db->execute($stmt);
+		
+		/*if (PEAR::isError($result)) {
+			throw new Exception($result->getMessage());
+		}*/
+		
+		return $result;
+	}
+	
+	public function delete($method='hard')
+	{
+		if ($method == 'soft')
+			return $this->save(1);
+			
+		// create query
+		$query="DELETE FROM ".self::$tableName." WHERE lngID=".$this->lngID;
+
+		// prepare query
+		$stmt = $this->db->prepare($query);
+
+		// execute statement
+		$result =& $this->db->execute($stmt);
+		
+		/*if (PEAR::isError($result)) {
+			throw new Exception($result->getMessage());
+		}*/
+		
+		return $result;
+	}
+}

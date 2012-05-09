@@ -1,0 +1,13 @@
+<?php
+
+require_once("../includes/view_included.php");
+
+$timesheet = new TimesheetTwoWeeks();
+
+$timesheet->timesheet_period_id = $args['timesheet_period_id'];
+$timesheet->employee_id = $args['employee_id'];
+$timesheet->ca_or_sa = $args['ca_or_sa'];
+$timesheet->init_selectively_from_db($overtime = true);
+
+echo json_encode($timesheet->get_timesheet_data());
+?>

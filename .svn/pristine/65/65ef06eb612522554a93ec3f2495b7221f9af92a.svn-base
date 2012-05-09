@@ -1,0 +1,151 @@
+<?php
+$args = $_REQUEST;
+$week_data1 = json_decode($args['week_data1'], true);
+$week_data2 = json_decode($args['week_data2'], true);
+$week_total1 = json_decode($args['week_total1'], true);
+$week_total2 = json_decode($args['week_total2'], true);
+$two_week_total = json_decode($args['two_week_total'], true);
+
+$first_name = $args['first_name'];
+$last_name = $args['last_name'];
+$ca_or_sa = $args['ca_or_sa'];
+$payroll_period = $args['payroll_period'];
+$department = $args['department'];
+
+$ca_or_sa = strtolower($ca_or_sa); 
+
+function date_to_m_d($date){
+	return date('m/d', strtotime($date));
+}
+
+function create_fdf($pdffile, $strings, $keys)
+{
+    $fdf = "%FDF-1.2\n%����\n";
+    $fdf .= "1 0 obj \n<< /FDF << /Fields [\n";
+
+    foreach ($strings as $key => $value) {
+        $key = addcslashes($key, "\n\r\t\\()");
+        $value = addcslashes($value, "\n\r\t\\()");
+        $fdf .= "<< /T ($key) /V ($value) >> \n";
+    }
+    foreach ($keys as $key => $value) {
+        $key = addcslashes($key, "\n\r\t\\()");
+        $fdf .= "<< /T ($key) /V /$value >> \n";
+    }
+
+    $fdf .= "]\n/F ($pdffile) >>";
+    $fdf .= ">>\nendobj\ntrailer\n<<\n";
+    $fdf .= "/Root 1 0 R \n\n>>\n";
+    $fdf .= "%%EOF";
+
+    return $fdf;
+}
+
+// Fill in text fields
+$string_pairs = array(
+    'first_name' => $first_name,
+    'last_name' => $last_name,
+    'payroll_period' => $payroll_period,
+    'department' => $department
+);
+
+// Fill in check boxes/radio buttons
+$bool_pairs = array(
+    'ca_or_sa' => $ca_or_sa
+);
+
+$i = 1;
+foreach($week_data1 as $day){
+    if(!empty($day['time_in'])){
+    $string_pairs["time_in_$i"] = $day['time_in'];
+    $string_pairs["time_out_$i"] = $day['time_out'];
+    $string_pairs["meal_period_$i"] = $day['meal_period'];
+    $string_pairs["hours_worked_$i"] = $day['hours_worked'];
+    }
+    $string_pairs["date_$i"] = date_to_m_d($day['date']);
+    $string_pairs["sick_hours_$i"] = $day['sick_hours'];
+    $string_pairs["annual_hours_$i"] = $day['annual_hours'];
+    $string_pairs["shift_hours_$i"] = $day['shift_hours'];
+    $string_pairs["total_$i"] = $day['total'];
+    $i++;
+}
+foreach($week_data2 as $day){
+    if(!empty($day['time_in'])){
+    $string_pairs["time_in_$i"] = $day['time_in'];
+    $string_pairs["time_out_$i"] = $day['time_out'];
+    $string_pairs["meal_period_$i"] = $day['meal_period'];
+    $string_pairs["hours_worked_$i"] = $day['hours_worked'];
+    }
+    $string_pairs["date_$i"] = date_to_m_d($day['date']);
+    $string_pairs["sick_hours_$i"] = $day['sick_hours'];
+    $string_pairs["annual_hours_$i"] = $day['annual_hours'];
+    $string_pairs["shift_hours_$i"] = $day['shift_hours'];
+    $string_pairs["total_$i"] = $day['total'];
+    $i++;
+}
+
+$string_pairs["week_sub_total_hours_worked_1"] = $week_total1['total_hours_worked'];
+$string_pairs["week_sub_total_sick_hours_1"] = $week_total1['total_sick_hours'];
+$string_pairs["week_sub_total_annual_hours_1"] = $week_total1['total_annual_hours'];
+$string_pairs["week_sub_total_shift_hours_1"] = $week_total1['total_shift_hours'];
+$string_pairs["week_sub_total_total_1"] = $week_total1['total'];
+
+$string_pairs["week_sub_total_hours_worked_2"] = $week_total2['total_hours_worked'];
+$string_pairs["week_sub_total_sick_hours_2"] = $week_total2['total_sick_hours'];
+$string_pairs["week_sub_total_annual_hours_2"] = $week_total2['total_annual_hours'];
+$string_pairs["week_sub_total_shift_hours_2"] = $week_total2['total_shift_hours'];
+$string_pairs["week_sub_total_total_2"] = $week_total2['total'];
+
+$string_pairs["total_hours_hours_worked"] = $two_week_total['total_hours_worked'];
+$string_pairs["total_hours_sick_hours"] = $two_week_total['total_sick_hours'];
+$string_pairs["total_hours_annual_hours"] = $two_week_total['total_annual_hours'];
+$string_pairs["total_hours_shift_hours"] = $two_week_total['total_shift_hours'];
+$string_pairs["total_hours_total"] = $two_week_total['total'];
+
+//remove empty values from displaying on pdf
+foreach($string_pairs as $key=>$value){
+    if ($value == '0' || $value == '0:00' || $value == ''){
+        unset($string_pairs[$key]);
+    }
+}
+
+// Output the PDF form, with form data filled-in
+
+$pdf_source = "pdf_v3.pdf";
+$file_id = $first_name . $last_name . time() . '_rmv';
+$fdf_file = fopen("$file_id.fdf", "w");
+$fdf_string = create_fdf($pdf_source, $string_pairs, $bool_pairs);
+fwrite($fdf_file, $fdf_string);
+fclose($fdf_file);
+
+$filename = 'timesheet.pdf';
+header('Pragma: public');
+header('Expires: 0');
+header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+header('Cache-Control: public');
+header('Content-Description: File Transfer');
+header('Content-Type: application/pdf');
+//header("Content-Disposition: attachment; filename=$filename");
+header('Content-Transfer-Encoding: UTF-8');
+
+//java call
+//system('java -classpath ".;itextpdf-5.1.1.jar" http://sysdev/devroot/etrileski/timesheet/fdf_gen_php/fdf_generator_url.php CATimeSheet_original.pdf Eugene_Trileski.fdf new_pdf.pdf2 flatten', $output);
+//passthru('java -classpath ".;itextpdf-5.1.1.jar" Merge_pdf_fdf pdf_v3.pdf http://sysdev/devroot/etrileski/timesheets/admin/fdf_gen_php/fdf_generator_url.php dummy.pdf flatten');
+//exec('java -classpath ".;itextpdf-5.1.3.jar" StreamPdf pdf_v3.pdf ' . "$file_id.fdf $file_id.pdf" . ' flatten');
+//echo './pdftk.exe pdf_v3.pdf fill_form ' . "$file_id.fdf output $file_id.pdf" . ' flatten';
+exec('start ./pdftk.exe pdf_v3.pdf fill_form ' . "$file_id.fdf output $file_id.pdf" . ' flatten');
+readfile("$file_id.pdf");
+
+//if ($handle = opendir('./')) {
+//
+//    while (false !== ($file = readdir($handle))) {
+//	    if (substr($file, -8, -4) == '_rmv'){
+//		    unlink($file);
+//	    }
+//    }
+//    
+//    closedir($handle);
+//}
+
+?>
+

@@ -1,0 +1,186 @@
+<script id="totals_template" type="text/x-jquery-tmpl">
+	<tr>
+
+                <td/>
+		<td/>
+		<td/>
+		<td/>
+		<td align="right"><span style="font-weight: bold">${$item.header}:</span></td>
+                <td><b>${total_hours_worked}</b></td>
+		<td><b>${total_sick_hours}</b></td>
+                <td><b>${total_annual_hours}</b></td>
+                <td><b>${total}</b></td>
+                <td><b>${total_shift_hours}<input style ="display:none;"/></b></td>
+		<td></td>
+	</tr>
+</script>
+
+<script id="day_calculated_template" type="text/x-jquery-tmpl">
+	<tr class="grid-row${num%2}  {{if error.length}} red {{/if}} {{if warning.length && !error.length}} orange {{/if}} {{if warning.search(/no data/i) > 0}} black {{/if}} ">
+		<td>${day}</td>
+		<td>
+			<a class="day_calculated" href="" onclick="return false">${date}</a>
+		</td>
+		<td>${time_in}</td>
+		<td>${meal_period}</td>
+		<td>${time_out}</td>
+		<td>${hours_worked}</td>
+		<td>${sick_hours}</td>
+		<td>${annual_hours}</td>
+		<td>${total}</td>
+		<td>${shift_hours}</td>
+		<td>{{if comment.length}}<img title="${comment}" src="<?= COMMON_FILES_PATH; ?>images/icons/note_16.png"></img>{{/if}}</td>
+	</tr>
+</script>
+
+<script id="meal_periods_day_template" type="text/x-jquery-tmpl">
+	<tr>
+		<th align="right">Break ${$.inArray(this.data, this.parent.data.meal_period_times_raw) + 1}: </th>
+		<td>
+			<input type="text" value="${meal_period_in}" name="meal_period_in" class="break time_picker"/>
+		</td>
+		<td>
+			<input type="text" value="${meal_period_out}" name="meal_period_out" class="break time_picker"/>
+		</td>
+		<td style="text-align: center;">${this_meal_period}</td>
+		<td>
+			<button class="remove_break button btn-delete" style="width:120px;" type="button">Remove-Break</button>
+		</td>
+	</tr>
+</script>
+
+<script id="day_raw_modal_template" type="text/x-jquery-tmpl">
+	<table class="day_grid grid-def">
+		<tr>
+			<th>Day</th>
+			<th>Date</th>
+			<th>Time<br/> In</th>
+			<th>Meal <br/> Period</th>
+			<th>Time <br/> Out</th>
+			<th>Hours<br/> Worked</th>
+			<th>Sick <br/> Hours</th>
+			<th>Annual <br/> Hours</th>
+			<th>Total</th>
+			<th>Shift<br/> Hours</th>
+			<th>Modified</th>
+		</tr>
+		<tr>
+			<td>${day}</td>
+			<td>${date}</td>
+			<td>${time_in}</td>
+			<td>${meal_period}</td>
+			<td>${time_out}</td>
+			<td>${hours_worked}</td>
+			<td>
+				<input type="text" name="sick_hours" value="${sick_hours}"/>
+			</td>
+			<td>
+				<input type="text" name="annual_hours" value="${annual_hours}"/>
+			</td>
+			<td>${total}</td>
+			<td>${shift_hours}</td>
+			<td style="color: green;">${is_modified}</td>
+		</tr>
+	</table>
+	<table style="text-align: left; margin: 10px" class="day_raw_grid" width="70%">
+		<tbody>
+			{{if success.length && !error.length && !input_error.length}}
+			<tr>
+				<td colspan="5">					
+					<div class="status_box Success">
+						<b>Success:</b><br/>
+						${success}
+					</div>
+				</td>
+			</tr>
+			{{/if}}
+			
+			{{if error.length}}
+			<tr>
+
+				<td colspan ="5">
+					<div class="status_box Error">
+						<b>Error:</b><br/>
+						{{html error}}
+					</div>
+				</td>
+			</tr>
+			{{/if}}
+			
+			{{if input_error.length}}
+			<tr>
+				<td colspan ="5">
+					<div class="status_box Error">
+						<b>Error:</b><br/>
+						{{html input_error}}
+					</div>
+				</td>
+			</tr>
+			{{/if}}
+			
+			{{if warning.length}}
+			<tr>
+				<td colspan="5">
+					<div class="status_box Warning">
+						<b>Warning:</b><br/>
+						{{html warning}}
+					</div>
+				</td>
+
+			</tr>
+			{{/if}}
+
+		</tbody>
+		<tr class="space_under"><td rowspan="1"></td></tr>
+		<tr class="space_under">
+			<th align="right">IN:</th>
+			<td>
+				<input type="text" value="${time_in_raw}" name="time_in_raw" class="time_picker"/>
+			</td>
+		</tr>
+		<tr class="space_under">
+			<th align="right">OUT:</th>
+			<td>
+				<input type="text" value="${time_out_raw}" name="time_out_raw" class="time_picker"/>
+			</td>
+		</tr>
+
+		{{if meal_period_times_raw.length}}
+		<tr style="text-align: center;">
+			<td></td>
+			<th>Start</th><th>End</th><th>Total</th>
+		</tr>
+		{{/if}}
+		{{tmpl(meal_period_times_raw) "#meal_periods_day_template"}}
+		<tr class="space_under">
+			<td></td>
+			<td>
+				<button class="add_break button btn-add" type="button" style="width: 100px;">Add-Break</button>
+			</td>
+			<td></td><td></td><td></td>
+		</tr>
+
+		<tr>
+			<th align="right">Comment:</th>
+			<td colspan="4">
+				<textarea id="resizable" rows="8" cols="70" name="comment">${comment}</textarea>
+			</td>
+		</tr>
+	</table>
+</script>
+<script id="loading1" type="text/x-jquery-tmpl">
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+		<tr class="loading-grid">
+			<td colspan="11" style="text-align: center !important;">
+				<img style="position: absolute; left:50%" src="/common/images/loading-maroon.gif" />
+			</td>
+		</tr>
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+		<tr class="loading-grid"><td colspan="11">&nbsp</td></tr>
+</script>
+<script id="loading2" type="text/x-jquery-tmpl">
+	<tr><td colspan = "11">&nbsp</td></tr>
+</script>

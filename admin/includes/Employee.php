@@ -1,0 +1,325 @@
+<?php
+//require_once(dirname(__FILE__)."/DbObject.php");
+//require_once(dirname(__FILE__)."/ID.php");
+
+class Employee extends DbObject
+{
+	public static $tableName = "timeclockSQL.dbo.tblEmployees";
+	public $exists = false;
+
+	/** [[Column=lngID, DataType=int, Description=LngID, ReadOnly=true]]*/
+	public $lngID;
+
+	/** [[Column=strFullName, DataType=varchar, Description=StrFullName, MaxLength=255]]*/
+	public $strFullName;
+
+	/** [[Column=lngShiftID, DataType=int, Description=LngShiftID]]*/
+	public $lngShiftID;
+
+	/** [[Column=lngDepartmentID, DataType=int, Description=LngDepartmentID]]*/
+	public $lngDepartmentID;
+
+	/** [[Column=lngEmployeeID, DataType=int, Description=LngEmployeeID]]*/
+	public $lngEmployeeID;
+
+	/** [[Column=strPIN, DataType=varchar, Description=StrPIN, MaxLength=255]]*/
+	public $strPIN;
+
+	/** [[Column=blnDisabled, DataType=bit, Description=BlnDisabled, Required=true]]*/
+	public $blnDisabled;
+
+	/** [[Column=bytPaymentBasis, DataType=smallint, Description=BytPaymentBasis]]*/
+	public $bytPaymentBasis;
+
+	/** [[Column=dblNormalRatePerHour, DataType=float, Description=DblNormalRatePerHour]]*/
+	public $dblNormalRatePerHour;
+
+	/** [[Column=dblOTRatePerHour, DataType=float, Description=DblOTRatePerHour]]*/
+	public $dblOTRatePerHour;
+
+	/** [[Column=dblSalaryPerPeriod, DataType=float, Description=DblSalaryPerPeriod]]*/
+	public $dblSalaryPerPeriod;
+
+	/** [[Column=bytSalaryPeriod, DataType=smallint, Description=BytSalaryPeriod]]*/
+	public $bytSalaryPeriod;
+
+	/** [[Column=dblOTLoading, DataType=float, Description=DblOTLoading]]*/
+	public $dblOTLoading;
+
+	/** [[Column=blnCreditPaidHolidays, DataType=bit, Description=BlnCreditPaidHolidays, Required=true]]*/
+	public $blnCreditPaidHolidays;
+
+	/** [[Column=strSSN, DataType=varchar, Description=StrSSN, MaxLength=20]]*/
+	public $strSSN;
+
+	/** [[Column=lngEmploymentType, DataType=int, Description=LngEmploymentType]]*/
+	public $lngEmploymentType;
+
+	/** [[Column=datBirth, DataType=datetime, Description=DatBirth]]*/
+	public $datBirth;
+
+	/** [[Column=datHired, DataType=datetime, Description=DatHired]]*/
+	public $datHired;
+
+	/** [[Column=strNotes, DataType=varchar, Description=StrNotes, MaxLength=1073741823]]*/
+	public $strNotes;
+
+	/** [[Column=strHomePhone, DataType=varchar, Description=StrHomePhone, MaxLength=255]]*/
+	public $strHomePhone;
+
+	/** [[Column=strAlternatePhone, DataType=varchar, Description=StrAlternatePhone, MaxLength=255]]*/
+	public $strAlternatePhone;
+
+	/** [[Column=strCellPhone, DataType=varchar, Description=StrCellPhone, MaxLength=255]]*/
+	public $strCellPhone;
+
+	/** [[Column=strAddress, DataType=varchar, Description=StrAddress, MaxLength=1073741823]]*/
+	public $strAddress;
+
+	/** [[Column=strEmergencyContact, DataType=varchar, Description=StrEmergencyContact, MaxLength=255]]*/
+	public $strEmergencyContact;
+
+	/** [[Column=strEmergencyPhone, DataType=varchar, Description=StrEmergencyPhone, MaxLength=255]]*/
+	public $strEmergencyPhone;
+
+	/** [[Column=bytMaritalStatus, DataType=smallint, Description=BytMaritalStatus]]*/
+	public $bytMaritalStatus;
+
+	/** [[Column=bytEmployeeType, DataType=smallint, Description=BytEmployeeType]]*/
+	public $bytEmployeeType;
+
+	/** [[Column=strTaxExemptions, DataType=varchar, Description=StrTaxExemptions, MaxLength=255]]*/
+	public $strTaxExemptions;
+
+	/** [[Column=blnDeleted, DataType=bit, Description=BlnDeleted, Required=true]]*/
+	public $blnDeleted;
+
+	/** [[Column=blnAccrueVacations, DataType=bit, Description=BlnAccrueVacations, Required=true]]*/
+	public $blnAccrueVacations;
+
+	/** [[Column=blnAccrueSickLeave, DataType=bit, Description=BlnAccrueSickLeave, Required=true]]*/
+	public $blnAccrueSickLeave;
+
+	/** [[Column=blnDelegate, DataType=bit, Description=BlnDelegate, Required=true]]*/
+	public $blnDelegate;
+
+	/** [[Column=sngVacationStartingBalance, DataType=real, Description=SngVacationStartingBalance]]*/
+	public $sngVacationStartingBalance;
+
+	/** [[Column=sngSickTimeStartingBalance, DataType=real, Description=SngSickTimeStartingBalance]]*/
+	public $sngSickTimeStartingBalance;
+
+	/** [[Column=dblOTRatePerHour2, DataType=real, Description=DblOTRatePerHour2]]*/
+	public $dblOTRatePerHour2;
+
+	/** [[Column=blnAlwaysPaySalary, DataType=bit, Description=BlnAlwaysPaySalary, Required=true]]*/
+	public $blnAlwaysPaySalary;
+
+	/** [[Column=blnWaiveAutomaticBreaks, DataType=real, Description=BlnWaiveAutomaticBreaks]]*/
+	public $blnWaiveAutomaticBreaks;
+
+	/** [[Column=strPattern1, DataType=varchar, Description=StrPattern1, MaxLength=1073741823]]*/
+	public $strPattern1;
+
+	/** [[Column=strPattern2, DataType=varchar, Description=StrPattern2, MaxLength=1073741823]]*/
+	public $strPattern2;
+
+	/** [[Column=lngMask1, DataType=int, Description=LngMask1]]*/
+	public $lngMask1;
+
+	/** [[Column=lngMask2, DataType=int, Description=LngMask2]]*/
+	public $lngMask2;
+
+	/** [[Column=lngEnrolledMask, DataType=int, Description=LngEnrolledMask]]*/
+	public $lngEnrolledMask;
+
+	/** [[Column=bytJobTracking, DataType=smallint, Description=BytJobTracking]]*/
+	public $bytJobTracking;
+
+	/** [[Column=sngHolidayCreditedHours, DataType=real, Description=SngHolidayCreditedHours]]*/
+	public $sngHolidayCreditedHours;
+
+	/** [[Column=blnOverrideHolidayHours, DataType=bit, Description=BlnOverrideHolidayHours, Required=true]]*/
+	public $blnOverrideHolidayHours;
+
+	/** [[Column=strEmailAddress, DataType=varchar, Description=StrEmailAddress, MaxLength=255]]*/
+	public $strEmailAddress;
+
+	/** [[Column=blnOverrideAccrualStart, DataType=bit, Description=BlnOverrideAccrualStart, Required=true]]*/
+	public $blnOverrideAccrualStart;
+
+	/** [[Column=datAccrualStart, DataType=datetime, Description=DatAccrualStart]]*/
+	public $datAccrualStart;
+
+	// foreign key fields (will be populated upon request)
+
+	public $type;
+	public function getEmploymentType() {
+		$this->type = new EmploymentType($this->lngEmploymentType);
+	}
+	
+	public $department;
+	public function getDepartment() {
+		$this->department = new Department($this->lngDepartmentID);
+	}
+	
+	public function isOvertimeEligible(){
+		
+		
+	}
+
+	public function fetchData($id)
+	{
+		//list($arg1, $arg2) = $args;
+		$query="SELECT lngID, strFullName, lngDepartmentID, lngEmploymentType FROM ".self::$tableName." WHERE lngID=".$id;
+
+		$row = $this->db->getRow($query);
+		
+		if (count($row) > 0)
+			$this->setPropertyValues($row);
+
+		if ($this->lngID > 0)
+			$this->exists = true;
+	}
+	
+	//".(@$args['with_type'] == true ? " 
+	public function getEmployees($args=array())
+	{
+		global $db;
+		
+		$query = "SELECT t.lngID, strFullName, lngDepartmentID, lngEmploymentType, bytEmployeeType, et.strName, t.blnDisabled
+			FROM ".self::$tableName." t
+				".(@$args['with_ids'] == true ? " INNER JOIN ids l ON t.lngID = l.lngID " : "")."
+				INNER JOIN tblEmploymentTypes et ON et.lngID = t.bytEmployeeType
+			WHERE 1=1
+				".(@$args['lngID'] != '' ? " AND t.lngID={$args['lngID']} " : "")."
+				".(@$args['strFullName'] != '' ? " AND strFullName='{$args['strFullName']}' " : "")."
+				".(@$args['lngShiftID'] != '' ? " AND lngShiftID={$args['lngShiftID']} " : "")."
+				".(@$args['lngDepartmentID'] != '' ? " AND lngDepartmentID={$args['lngDepartmentID']} " : "")."
+				".(@is_array($args['lngEmployeeIDs']) ? " AND lngEmployeeID IN (". implode(",", $args['lngEmployeeIDs']).") " : "")."
+				".(@$args['strPIN'] != '' ? " AND strPIN='{$args['strPIN']}' " : "")."
+				".(@$args['blnDisabled'] == false ? " AND t.blnDisabled = 0 " : "")."
+				".(@$args['bytPaymentBasis'] != '' ? " AND bytPaymentBasis={$args['bytPaymentBasis']} " : "")."
+				".(@$args['dblNormalRatePerHour'] != '' ? " AND dblNormalRatePerHour={$args['dblNormalRatePerHour']} " : "")."
+				".(@$args['dblOTRatePerHour'] != '' ? " AND dblOTRatePerHour={$args['dblOTRatePerHour']} " : "")."
+				".(@$args['dblSalaryPerPeriod'] != '' ? " AND dblSalaryPerPeriod={$args['dblSalaryPerPeriod']} " : "")."
+				".(@$args['bytSalaryPeriod'] != '' ? " AND bytSalaryPeriod={$args['bytSalaryPeriod']} " : "")."
+				".(@$args['dblOTLoading'] != '' ? " AND dblOTLoading={$args['dblOTLoading']} " : "")."
+				".(@$args['blnCreditPaidHolidays'] != '' ? " AND blnCreditPaidHolidays={$args['blnCreditPaidHolidays']} " : "")."
+				".(@$args['strSSN'] != '' ? " AND strSSN='{$args['strSSN']}' " : "")."
+				".(@$args['lngEmploymentType'] != '' ? " AND lngEmploymentType={$args['lngEmploymentType']} " : "")."
+				".(@$args['datBirth'] != '' ? " AND datBirth BETWEEN '{$args['datBirth']}' AND '{$args['datBirth']} 23:59:59'" : "")."
+				".(@$args['datHired'] != '' ? " AND datHired BETWEEN '{$args['datHired']}' AND '{$args['datHired']} 23:59:59'" : "")."
+				".(@$args['strNotes'] != '' ? " AND strNotes='{$args['strNotes']}' " : "")."
+				".(@$args['strHomePhone'] != '' ? " AND strHomePhone='{$args['strHomePhone']}' " : "")."
+				".(@$args['strAlternatePhone'] != '' ? " AND strAlternatePhone='{$args['strAlternatePhone']}' " : "")."
+				".(@$args['strCellPhone'] != '' ? " AND strCellPhone='{$args['strCellPhone']}' " : "")."
+				".(@$args['strAddress'] != '' ? " AND strAddress='{$args['strAddress']}' " : "")."
+				".(@$args['strEmergencyContact'] != '' ? " AND strEmergencyContact='{$args['strEmergencyContact']}' " : "")."
+				".(@$args['strEmergencyPhone'] != '' ? " AND strEmergencyPhone='{$args['strEmergencyPhone']}' " : "")."
+				".(@$args['bytMaritalStatus'] != '' ? " AND bytMaritalStatus={$args['bytMaritalStatus']} " : "")."
+				".(@$args['bytEmployeeType'] != '' ? " AND bytEmployeeType={$args['bytEmployeeType']} " : "")."
+				".(@$args['strTaxExemptions'] != '' ? " AND strTaxExemptions='{$args['strTaxExemptions']}' " : "")."
+				".(@$args['blnDeleted'] == false ? " AND t.blnDeleted = 0 " : "")."
+				".(@$args['blnAccrueVacations'] != '' ? " AND blnAccrueVacations={$args['blnAccrueVacations']} " : "")."
+				".(@$args['blnAccrueSickLeave'] != '' ? " AND blnAccrueSickLeave={$args['blnAccrueSickLeave']} " : "")."
+				".(@$args['blnDelegate'] != '' ? " AND blnDelegate={$args['blnDelegate']} " : "")."
+				".(@$args['sngVacationStartingBalance'] != '' ? " AND sngVacationStartingBalance={$args['sngVacationStartingBalance']} " : "")."
+				".(@$args['sngSickTimeStartingBalance'] != '' ? " AND sngSickTimeStartingBalance={$args['sngSickTimeStartingBalance']} " : "")."
+				".(@$args['dblOTRatePerHour2'] != '' ? " AND dblOTRatePerHour2={$args['dblOTRatePerHour2']} " : "")."
+				".(@$args['blnAlwaysPaySalary'] != '' ? " AND blnAlwaysPaySalary={$args['blnAlwaysPaySalary']} " : "")."
+				".(@$args['blnWaiveAutomaticBreaks'] != '' ? " AND blnWaiveAutomaticBreaks={$args['blnWaiveAutomaticBreaks']} " : "")."
+				".(@$args['strPattern1'] != '' ? " AND strPattern1='{$args['strPattern1']}' " : "")."
+				".(@$args['strPattern2'] != '' ? " AND strPattern2='{$args['strPattern2']}' " : "")."
+				".(@$args['lngMask1'] != '' ? " AND lngMask1={$args['lngMask1']} " : "")."
+				".(@$args['lngMask2'] != '' ? " AND lngMask2={$args['lngMask2']} " : "")."
+				".(@$args['lngEnrolledMask'] != '' ? " AND lngEnrolledMask={$args['lngEnrolledMask']} " : "")."
+				".(@$args['bytJobTracking'] != '' ? " AND bytJobTracking={$args['bytJobTracking']} " : "")."
+				".(@$args['sngHolidayCreditedHours'] != '' ? " AND sngHolidayCreditedHours={$args['sngHolidayCreditedHours']} " : "")."
+				".(@$args['blnOverrideHolidayHours'] != '' ? " AND blnOverrideHolidayHours={$args['blnOverrideHolidayHours']} " : "")."
+				".(@$args['strEmailAddress'] != '' ? " AND strEmailAddress='{$args['strEmailAddress']}' " : "")."
+				".(@$args['blnOverrideAccrualStart'] != '' ? " AND blnOverrideAccrualStart={$args['blnOverrideAccrualStart']} " : "")."
+				".(@$args['datAccrualStart'] != '' ? " AND datAccrualStart BETWEEN '{$args['datAccrualStart']}' AND '{$args['datAccrualStart']} 23:59:59'" : "")."
+			ORDER BY strFullName";
+
+		$results = $db->getAll($query);
+
+		$items = array();
+		foreach ($results as $r) {
+			$obj = new Employee();
+			$obj->setPropertyValues($r);
+			$obj->exists = true;
+			
+			$obj->type = new EmploymentType($obj->bytEmployeeType);
+			//$obj->type->setPropertyValues();
+			$obj->type->exists = true;
+			
+			if (@$args['with_ids'] == true) {
+				$obj->iD = new ID();
+				$obj->iD->setPropertyValues($r);
+				$obj->iD->exists = true;
+			}
+
+			array_push($items, $obj);
+		}
+		
+		return $items;
+	}
+	
+	public function getCount()
+	{
+		global $db;
+		
+		$query = "SELECT count(*) FROM ".self::$tableName;
+		return $db->getOne($query);
+	}
+	
+	public function save($delete=0)
+	{	
+		/*
+		global $login_info;
+
+		$user = $login_info->get_user_info();
+		
+		$this->modified_by = (isset($user['first_name']) ? $user['first_name'].' '.$user['last_name'] : $user['username']);
+		*/
+		//$this->last_modified = date("Y-m-d G:i:s");
+		//$this->deleted = ($delete == 1 || $delete === true ? '1' : '0');
+		
+		// create query
+		$query = ($this->exists ? $this->updateString(self::$tableName, 'lngID') : $this->insertString(self::$tableName));
+
+		// prepare query
+		$stmt = $this->db->prepare($query);
+
+		// execute statement
+		$result =& $this->db->execute($stmt);
+		
+		/*if (PEAR::isError($result)) {
+			throw new Exception($result->getMessage());
+		}*/
+		
+		return $result;
+	}
+	
+	public function delete($method='hard')
+	{
+		if ($method == 'soft')
+			return $this->save(1);
+			
+		// create query
+		$query="DELETE FROM ".self::$tableName." WHERE lngID=".$this->lngID;
+
+		// prepare query
+		$stmt = $this->db->prepare($query);
+
+		// execute statement
+		$result =& $this->db->execute($stmt);
+		
+		/*if (PEAR::isError($result)) {
+			throw new Exception($result->getMessage());
+		}*/
+		
+		return $result;
+	}
+}

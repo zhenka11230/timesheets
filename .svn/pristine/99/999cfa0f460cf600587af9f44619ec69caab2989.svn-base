@@ -1,0 +1,17 @@
+<?php
+
+require_once("includes/controller_included.php");
+
+$args = $_REQUEST;
+$timesheet = new TimesheetTwoWeeks();
+$transaction = new TimesheetDay();
+
+$timesheet->timesheet_period_id = $args['timesheet_period_id'];
+$timesheet->employee_id = $args['employee_id'];
+$timesheet->init_selectively_from_db($overtime = true);
+$status->message = $timesheet->get_timesheet_data();
+
+$status->status = "Success";
+return $status;
+
+?>

@@ -1,0 +1,15 @@
+<?php
+
+require_once("includes/controller_included.php");
+
+$args = $_REQUEST;
+$timesheet = new TimesheetTwoWeeks();
+$transaction = new TimesheetDay();
+
+$day_data = json_decode($args['json'], true);
+$day_data = $timesheet->get_reprocessed_day($day_data, $validate = true, $success_message = "Recalculated hours");
+$status->message = $day_data;
+$status->status = "Success";
+
+return $status;
+?>

@@ -1,0 +1,9 @@
+<?php
+require_once("../includes/view_included.php");
+
+$timesheet = new TimesheetTwoWeeks();
+
+$day_data = json_decode($args['json'], true);
+$day_data = $timesheet->get_reprocessed_day($day_data, $validate = 'all', $success_message = "Recalculated hours", $from_db = false, $persist_source_db = true);
+echo json_encode($day_data);
+?>
